@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "sentinel-ai"
+version = "1.0.0"
+description = "AI Incident Commander — detect, diagnose, and remediate production incidents with AI."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "PlayNexus" }]
+keywords = ["ai", "incident", "sre", "devops", "monitoring", "remediation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: System :: Monitoring",
+]
+dependencies = [
+    "requests>=2.31.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+sentinel = "sentinel.__main__:main"
+
+[project.urls]
+Homepage = "https://github.com/Nortaq-PlayNexus/sentinel"
+Repository = "https://github.com/Nortaq-PlayNexus/sentinel"
+
+[tool.setuptools.packages.find]
+include = ["sentinel*"]

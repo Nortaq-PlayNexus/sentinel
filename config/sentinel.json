@@ -1,0 +1,14 @@
+{
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "base_url": "https://api.openai.com/v1",
+    "api_key": null
+  },
+  "alert_sources": [],
+  "remediation": {
+    "auto_remediate": false,
+    "require_approval_for": ["high"],
+    "allowed_commands": ["git revert", "systemctl restart", "docker restart"]
+  }
+}
