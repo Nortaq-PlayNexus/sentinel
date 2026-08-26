@@ -91,7 +91,7 @@ class Display:
             console.print(f"  [dim]{connector}[/dim] [bold]{time_str}[/bold]")
             console.print(f"  {'|' if i < len(sorted_timeline) - 1 else ' '}   {event}")
             if i < len(sorted_timeline) - 1:
-                console.print(f"  [dim]|[/dim]")
+                console.print("  [dim]|[/dim]")
 
         console.print()
 

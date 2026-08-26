@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 import json
-import re
 import requests
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -323,7 +322,6 @@ class IncidentAnalyzer:
 
     def _store_incident(self, incident: dict):
         import os
-        from pathlib import Path
         incidents_dir = Path("data/incidents") if os.path.exists("data") else Path("sentinel-data/incidents")
         incidents_dir.mkdir(parents=True, exist_ok=True)
         iid = incident.get("incident_id", "unknown")

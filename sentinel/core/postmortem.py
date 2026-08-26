@@ -183,8 +183,8 @@ class PostmortemGenerator:
 
     def _build_impact_section(self, impact: dict, services: list[str], severity: str, mttr: float) -> str:
         lines = [
-            f"| Metric | Value |",
-            f"|--------|-------|",
+            "| Metric | Value |",
+            "|--------|-------|",
             f"| Severity | {severity} |",
             f"| Affected Services | {', '.join(services) if services else 'Unknown'} |",
             f"| Blast Radius | {impact.get('blast_radius', 'Unknown')} |",
