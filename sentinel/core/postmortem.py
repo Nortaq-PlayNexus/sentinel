@@ -128,7 +128,9 @@ class PostmortemGenerator:
             hours = seconds / 3600
             return f"{hours:.1f} hours"
 
-    def _build_summary(self, impact: dict, services: list[str], severity: str, root_cause: str) -> str:
+    def _build_summary(
+        self, impact: dict, services: list[str], severity: str, root_cause: str
+    ) -> str:
         parts = []
         if severity in ("P1", "P2"):
             parts.append("A high-severity incident occurred")
@@ -181,7 +183,9 @@ class PostmortemGenerator:
 
         return "\n".join(lines)
 
-    def _build_impact_section(self, impact: dict, services: list[str], severity: str, mttr: float) -> str:
+    def _build_impact_section(
+        self, impact: dict, services: list[str], severity: str, mttr: float
+    ) -> str:
         lines = [
             "| Metric | Value |",
             "|--------|-------|",
@@ -193,7 +197,9 @@ class PostmortemGenerator:
         ]
         return "\n".join(lines)
 
-    def _build_action_items(self, incident: dict, remediation_steps: list[dict], prevention: list[str]) -> str:
+    def _build_action_items(
+        self, incident: dict, remediation_steps: list[dict], prevention: list[str]
+    ) -> str:
         lines = []
         item_num = 1
 
@@ -206,18 +212,26 @@ class PostmortemGenerator:
             lines.append("")
 
         lines.append("**Short-term (within 1 week):**")
-        lines.append(f"{item_num}. [ ] Create monitoring dashboard for affected services")
+        lines.append(
+            f"{item_num}. [ ] Create monitoring dashboard for affected services"
+        )
         item_num += 1
         lines.append(f"{item_num}. [ ] Add alerting for root cause indicators")
         item_num += 1
-        lines.append(f"{item_num}. [ ] Review and update runbooks based on this incident")
+        lines.append(
+            f"{item_num}. [ ] Review and update runbooks based on this incident"
+        )
         item_num += 1
         lines.append("")
 
         lines.append("**Long-term (within 1 month):**")
-        lines.append(f"{item_num}. [ ] Implement automated remediation for this failure mode")
+        lines.append(
+            f"{item_num}. [ ] Implement automated remediation for this failure mode"
+        )
         item_num += 1
-        lines.append(f"{item_num}. [ ] Conduct chaos engineering tests for this scenario")
+        lines.append(
+            f"{item_num}. [ ] Conduct chaos engineering tests for this scenario"
+        )
         item_num += 1
 
         if prevention:
@@ -229,7 +243,9 @@ class PostmortemGenerator:
 
         return "\n".join(lines)
 
-    def _build_lessons_learned(self, incident: dict, root_cause: str, severity: str) -> str:
+    def _build_lessons_learned(
+        self, incident: dict, root_cause: str, severity: str
+    ) -> str:
         lines = []
 
         lines.append("**What went well:**")
@@ -246,7 +262,9 @@ class PostmortemGenerator:
 
         lines.append("**Where we got lucky:**")
         if severity in ("P1", "P2"):
-            lines.append("- The incident occurred during business hours when more engineers were available")
+            lines.append(
+                "- The incident occurred during business hours when more engineers were available"
+            )
         else:
             lines.append("- The impact was limited to a subset of users")
             lines.append("- No data loss occurred")

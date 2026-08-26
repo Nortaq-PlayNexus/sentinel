@@ -72,10 +72,14 @@ class IncidentAnalyzer:
             result = self._llm_analyze(alert_data)
         except Exception as e:
             if self.display:
-                self.display.print_step(f"LLM unavailable, using rule-based analysis: {e}")
+                self.display.print_step(
+                    f"LLM unavailable, using rule-based analysis: {e}"
+                )
             result = self._rule_based_analyze(alert_data)
 
-        result.setdefault("incident_id", f"INC-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}")
+        result.setdefault(
+            "incident_id", f"INC-{datetime.now(timezone.utc).strftime('%Y%m%d%H%M%S')}"
+        )
         result.setdefault("timestamp", datetime.now(timezone.utc).isoformat())
         result.setdefault("raw_alerts", alert_data)
 
@@ -99,7 +103,9 @@ class IncidentAnalyzer:
 
         resp = requests.post(
             f"{self.base_url}/chat/completions",
-            headers=headers, json=payload, timeout=120,
+            headers=headers,
+            json=payload,
+            timeout=120,
         )
         resp.raise_for_status()
         content = resp.json()["choices"][0]["message"]["content"]
@@ -108,21 +114,29 @@ class IncidentAnalyzer:
         end = content.rfind("}") + 1
         if start != -1 and end > start:
             return json.loads(content[start:end])
-        return {"title": "Unclassified Incident", "severity": "P3", "root_cause": content}
+        return {
+            "title": "Unclassified Incident",
+            "severity": "P3",
+            "root_cause": content,
+        }
 
     def _rule_based_analyze(self, alert_data: dict) -> dict:
         alerts = alert_data.get("alerts", [alert_data])
         severity = self._infer_severity(alerts)
         services = set()
         for alert in alerts:
-            svc = alert.get("service") or alert.get("labels", {}).get("service", "unknown")
+            svc = alert.get("service") or alert.get("labels", {}).get(
+                "service", "unknown"
+            )
             services.add(svc)
 
         root_cause = self._detect_root_cause(alerts)
         remediation = self._suggest_remediation(root_cause, list(services))
 
         return {
-            "title": alert_data.get("summary", alert_data.get("title", "Production Incident")),
+            "title": alert_data.get(
+                "summary", alert_data.get("title", "Production Incident")
+            ),
             "severity": severity,
             "root_cause": root_cause,
             "impact": {
@@ -147,7 +161,11 @@ class IncidentAnalyzer:
                 return "Out of Memory (OOM) - process killed by kernel OOM killer. Check memory limits and usage."
             if "disk full" in msg or "no space left" in msg or "disk usage" in msg:
                 return "Disk Full - filesystem exhausted. Check for log growth, temp files, or data accumulation."
-            if "connection pool" in msg or "pool exhausted" in msg or "too many connections" in msg:
+            if (
+                "connection pool" in msg
+                or "pool exhausted" in msg
+                or "too many connections" in msg
+            ):
                 return "Connection Pool Exhausted - all connections in use. Check for connection leaks or increase pool size."
             if "cpu" in msg and ("high" in msg or "95%" in msg or "100%" in msg):
                 return "High CPU Usage - process consuming excessive CPU. Check for infinite loops or hot paths."
@@ -177,45 +195,156 @@ class IncidentAnalyzer:
         steps = []
         if "OOM" in root_cause or "memory" in root_cause.lower():
             steps = [
-                {"order": 1, "action": "Check current memory usage", "command": "free -h && ps aux --sort=-%mem | head -20", "risk": "low"},
-                {"order": 2, "action": "Increase memory limits if needed", "command": "", "risk": "medium"},
-                {"order": 3, "action": "Restart affected service", "command": f"systemctl restart {services[0]}" if services else "", "risk": "medium"},
+                {
+                    "order": 1,
+                    "action": "Check current memory usage",
+                    "command": "free -h && ps aux --sort=-%mem | head -20",
+                    "risk": "low",
+                },
+                {
+                    "order": 2,
+                    "action": "Increase memory limits if needed",
+                    "command": "",
+                    "risk": "medium",
+                },
+                {
+                    "order": 3,
+                    "action": "Restart affected service",
+                    "command": f"systemctl restart {services[0]}" if services else "",
+                    "risk": "medium",
+                },
             ]
         elif "disk" in root_cause.lower():
             steps = [
-                {"order": 1, "action": "Check disk usage", "command": "df -h", "risk": "low"},
-                {"order": 2, "action": "Find large files", "command": "du -sh /* | sort -rh | head -20", "risk": "low"},
-                {"order": 3, "action": "Clean old logs/temp files", "command": "find /var/log -name '*.log' -mtime +7 -delete", "risk": "medium"},
+                {
+                    "order": 1,
+                    "action": "Check disk usage",
+                    "command": "df -h",
+                    "risk": "low",
+                },
+                {
+                    "order": 2,
+                    "action": "Find large files",
+                    "command": "du -sh /* | sort -rh | head -20",
+                    "risk": "low",
+                },
+                {
+                    "order": 3,
+                    "action": "Clean old logs/temp files",
+                    "command": "find /var/log -name '*.log' -mtime +7 -delete",
+                    "risk": "medium",
+                },
             ]
         elif "connection pool" in root_cause.lower():
             steps = [
-                {"order": 1, "action": "Check active connections", "command": "ss -tuln | grep :5432", "risk": "low"},
-                {"order": 2, "action": "Increase pool size in config", "command": "", "risk": "medium"},
-                {"order": 3, "action": "Restart service to reset pool", "command": f"systemctl restart {services[0]}" if services else "", "risk": "medium"},
+                {
+                    "order": 1,
+                    "action": "Check active connections",
+                    "command": "ss -tuln | grep :5432",
+                    "risk": "low",
+                },
+                {
+                    "order": 2,
+                    "action": "Increase pool size in config",
+                    "command": "",
+                    "risk": "medium",
+                },
+                {
+                    "order": 3,
+                    "action": "Restart service to reset pool",
+                    "command": f"systemctl restart {services[0]}" if services else "",
+                    "risk": "medium",
+                },
             ]
         elif "deploy" in root_cause.lower():
             steps = [
-                {"order": 1, "action": "Identify last deployment", "command": "git log --oneline -5", "risk": "low"},
-                {"order": 2, "action": "Rollback deployment", "command": "git revert HEAD --no-edit", "risk": "high"},
-                {"order": 3, "action": "Verify rollback health", "command": "", "risk": "low"},
+                {
+                    "order": 1,
+                    "action": "Identify last deployment",
+                    "command": "git log --oneline -5",
+                    "risk": "low",
+                },
+                {
+                    "order": 2,
+                    "action": "Rollback deployment",
+                    "command": "git revert HEAD --no-edit",
+                    "risk": "high",
+                },
+                {
+                    "order": 3,
+                    "action": "Verify rollback health",
+                    "command": "",
+                    "risk": "low",
+                },
             ]
         elif "timeout" in root_cause.lower() or "latency" in root_cause.lower():
             steps = [
-                {"order": 1, "action": "Check service metrics", "command": "", "risk": "low"},
-                {"order": 2, "action": "Check downstream services", "command": "", "risk": "low"},
-                {"order": 3, "action": "Scale up instances if needed", "command": "", "risk": "medium"},
+                {
+                    "order": 1,
+                    "action": "Check service metrics",
+                    "command": "",
+                    "risk": "low",
+                },
+                {
+                    "order": 2,
+                    "action": "Check downstream services",
+                    "command": "",
+                    "risk": "low",
+                },
+                {
+                    "order": 3,
+                    "action": "Scale up instances if needed",
+                    "command": "",
+                    "risk": "medium",
+                },
             ]
-        elif "503" in root_cause or "502" in root_cause or "unavailable" in root_cause.lower():
+        elif (
+            "503" in root_cause
+            or "502" in root_cause
+            or "unavailable" in root_cause.lower()
+        ):
             steps = [
-                {"order": 1, "action": "Check service status", "command": f"systemctl status {services[0]}" if services else "docker ps", "risk": "low"},
-                {"order": 2, "action": "Check health endpoints", "command": "", "risk": "low"},
-                {"order": 3, "action": "Restart service", "command": f"systemctl restart {services[0]}" if services else "", "risk": "medium"},
+                {
+                    "order": 1,
+                    "action": "Check service status",
+                    "command": f"systemctl status {services[0]}"
+                    if services
+                    else "docker ps",
+                    "risk": "low",
+                },
+                {
+                    "order": 2,
+                    "action": "Check health endpoints",
+                    "command": "",
+                    "risk": "low",
+                },
+                {
+                    "order": 3,
+                    "action": "Restart service",
+                    "command": f"systemctl restart {services[0]}" if services else "",
+                    "risk": "medium",
+                },
             ]
         else:
             steps = [
-                {"order": 1, "action": "Investigate alert details manually", "command": "", "risk": "low"},
-                {"order": 2, "action": "Check service health dashboards", "command": "", "risk": "low"},
-                {"order": 3, "action": "Consider rollback if recent deployment", "command": "git revert HEAD --no-edit", "risk": "medium"},
+                {
+                    "order": 1,
+                    "action": "Investigate alert details manually",
+                    "command": "",
+                    "risk": "low",
+                },
+                {
+                    "order": 2,
+                    "action": "Check service health dashboards",
+                    "command": "",
+                    "risk": "low",
+                },
+                {
+                    "order": 3,
+                    "action": "Consider rollback if recent deployment",
+                    "command": "git revert HEAD --no-edit",
+                    "risk": "medium",
+                },
             ]
         return steps
 
@@ -233,7 +362,9 @@ class IncidentAnalyzer:
         time_window_minutes = 5
 
         for alert in alerts:
-            svc = alert.get("service") or alert.get("labels", {}).get("service", "unknown")
+            svc = alert.get("service") or alert.get("labels", {}).get(
+                "service", "unknown"
+            )
             groups["by_service"].setdefault(svc, []).append(alert)
 
             ts = alert.get("timestamp", alert.get("time", ""))
@@ -243,29 +374,45 @@ class IncidentAnalyzer:
                         dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
                     else:
                         dt = datetime.fromtimestamp(float(ts), tz=timezone.utc)
-                    window_key = dt.strftime("%Y-%m-%dT%H:%M") + f"_{dt.minute // time_window_minutes * time_window_minutes:02d}"
+                    window_key = (
+                        dt.strftime("%Y-%m-%dT%H:%M")
+                        + f"_{dt.minute // time_window_minutes * time_window_minutes:02d}"
+                    )
                     groups["by_time_window"].setdefault(window_key, []).append(alert)
                 except (ValueError, TypeError, OSError):
                     pass
 
         for alert in alerts:
-            svc = alert.get("service") or alert.get("labels", {}).get("service", "unknown")
+            svc = alert.get("service") or alert.get("labels", {}).get(
+                "service", "unknown"
+            )
             deps = SERVICE_DEPENDENCIES.get(svc, [])
             for dep in deps:
                 for other in alerts:
-                    other_svc = other.get("service") or other.get("labels", {}).get("service", "")
+                    other_svc = other.get("service") or other.get("labels", {}).get(
+                        "service", ""
+                    )
                     if other_svc == dep:
-                        groups["by_dependency"].setdefault(f"{svc}->{dep}", []).append(alert)
+                        groups["by_dependency"].setdefault(f"{svc}->{dep}", []).append(
+                            alert
+                        )
 
         return groups
 
     def build_timeline(self, incident: dict) -> list[dict]:
         timeline = []
-        alerts = incident.get("alerts", [incident]) if isinstance(incident, dict) else []
+        alerts = (
+            incident.get("alerts", [incident]) if isinstance(incident, dict) else []
+        )
 
         for alert in alerts:
-            ts = alert.get("timestamp", alert.get("time", datetime.now(timezone.utc).isoformat()))
-            summary = alert.get("summary", alert.get("description", alert.get("message", "Alert received")))
+            ts = alert.get(
+                "timestamp", alert.get("time", datetime.now(timezone.utc).isoformat())
+            )
+            summary = alert.get(
+                "summary",
+                alert.get("description", alert.get("message", "Alert received")),
+            )
             svc = alert.get("service") or alert.get("labels", {}).get("service", "")
             entry = {"time": str(ts), "event": summary}
             if svc:
@@ -273,10 +420,12 @@ class IncidentAnalyzer:
             timeline.append(entry)
 
         if not timeline:
-            timeline.append({
-                "time": datetime.now(timezone.utc).isoformat(),
-                "event": "Incident created",
-            })
+            timeline.append(
+                {
+                    "time": datetime.now(timezone.utc).isoformat(),
+                    "event": "Incident created",
+                }
+            )
 
         timeline.sort(key=lambda x: x["time"])
         return timeline
@@ -301,7 +450,9 @@ class IncidentAnalyzer:
                     except (ValueError, TypeError, OSError):
                         pass
             if len(timestamps) >= 2:
-                duration_minutes = (max(timestamps) - min(timestamps)).total_seconds() / 60
+                duration_minutes = (
+                    max(timestamps) - min(timestamps)
+                ).total_seconds() / 60
 
         thresholds = ESCALATION_THRESHOLDS.get(severity, ESCALATION_THRESHOLDS["P3"])
         escalate_now = thresholds["immediate"] or duration_minutes > 30
@@ -322,7 +473,12 @@ class IncidentAnalyzer:
 
     def _store_incident(self, incident: dict):
         import os
-        incidents_dir = Path("data/incidents") if os.path.exists("data") else Path("sentinel-data/incidents")
+
+        incidents_dir = (
+            Path("data/incidents")
+            if os.path.exists("data")
+            else Path("sentinel-data/incidents")
+        )
         incidents_dir.mkdir(parents=True, exist_ok=True)
         iid = incident.get("incident_id", "unknown")
         with open(incidents_dir / f"{iid}.json", "w") as f:

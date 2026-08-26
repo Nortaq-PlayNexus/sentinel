@@ -63,7 +63,9 @@ class RemediationEngine:
             return False
 
         if self.display:
-            self.display.print_step(f"Remediating {incident_id} ({len(steps)} steps) {'[DRY RUN]' if dry_run else ''}")
+            self.display.print_step(
+                f"Remediating {incident_id} ({len(steps)} steps) {'[DRY RUN]' if dry_run else ''}"
+            )
 
         all_ok = True
         for step in sorted(steps, key=lambda s: s.get("order", 99)):
@@ -72,7 +74,9 @@ class RemediationEngine:
             risk = step.get("risk", "low")
 
             if self.display:
-                self.display.print_step(f"  Step {step.get('order', '?')}: {action} [risk: {risk}]")
+                self.display.print_step(
+                    f"  Step {step.get('order', '?')}: {action} [risk: {risk}]"
+                )
 
             if dry_run:
                 if command:
@@ -88,7 +92,9 @@ class RemediationEngine:
                         self.display.print_step(f"    Command failed: {command}")
             elif command and risk == "high":
                 if self.display:
-                    self.display.print_step(f"    Skipping high-risk command (requires manual approval): {command}")
+                    self.display.print_step(
+                        f"    Skipping high-risk command (requires manual approval): {command}"
+                    )
 
         return all_ok
 
@@ -110,7 +116,9 @@ class RemediationEngine:
 
     def scale_instances(self, service: str, count: int) -> bool:
         action_meta = REMEDIATION_ACTIONS["scale_instances"]
-        if not self._confirm_action(f"Scale '{service}' to {count} instances", action_meta):
+        if not self._confirm_action(
+            f"Scale '{service}' to {count} instances", action_meta
+        ):
             return False
 
         cmd = f"docker service scale {service}={count}"
@@ -138,7 +146,9 @@ class RemediationEngine:
 
     def clear_cache(self, service: str, cache_type: str = "redis") -> bool:
         action_meta = REMEDIATION_ACTIONS["clear_cache"]
-        if not self._confirm_action(f"Clear {cache_type} cache for '{service}'", action_meta):
+        if not self._confirm_action(
+            f"Clear {cache_type} cache for '{service}'", action_meta
+        ):
             return False
 
         if cache_type == "redis":
@@ -159,10 +169,12 @@ class RemediationEngine:
 
     def increase_connections(self, service: str, pool_size: int) -> bool:
         action_meta = REMEDIATION_ACTIONS["increase_connections"]
-        if not self._confirm_action(f"Increase connection pool to {pool_size} for '{service}'", action_meta):
+        if not self._confirm_action(
+            f"Increase connection pool to {pool_size} for '{service}'", action_meta
+        ):
             return False
 
-        cmd = f"psql -c \"ALTER SYSTEM SET max_connections = {pool_size}; SELECT pg_reload_conf();\""
+        cmd = f'psql -c "ALTER SYSTEM SET max_connections = {pool_size}; SELECT pg_reload_conf();"'
         if self.dry_run:
             if self.display:
                 self.display.print_step(f"    Would execute: {cmd}")
@@ -171,7 +183,9 @@ class RemediationEngine:
 
     def enable_maintenance_mode(self, service: str) -> bool:
         action_meta = REMEDIATION_ACTIONS["enable_maintenance_mode"]
-        if not self._confirm_action(f"Enable maintenance mode for '{service}'", action_meta):
+        if not self._confirm_action(
+            f"Enable maintenance mode for '{service}'", action_meta
+        ):
             return False
 
         cmd = f"touch /tmp/{service}.maintenance"
@@ -187,7 +201,9 @@ class RemediationEngine:
         if not action_meta.get("requires_confirmation", False):
             return True
         if self.display:
-            self.display.print_step(f"  [CONFIRM] {description} (risk: {action_meta['risk_level']})")
+            self.display.print_step(
+                f"  [CONFIRM] {description} (risk: {action_meta['risk_level']})"
+            )
         return True
 
     def _load_incident(self, incident_id: str) -> dict | None:
@@ -200,7 +216,11 @@ class RemediationEngine:
     def _execute_command(self, command: str) -> bool:
         try:
             result = subprocess.run(
-                command, shell=True, capture_output=True, text=True, timeout=60,
+                command,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=60,
             )
             if result.returncode != 0:
                 if self.display:

@@ -49,18 +49,39 @@ class AlertManager:
 
         if not self.sources:
             if self.display:
-                self.display.print_step("No alert sources configured. Add sources to config/sentinel.json")
+                self.display.print_step(
+                    "No alert sources configured. Add sources to config/sentinel.json"
+                )
                 self.display.print_step("Example config:")
-                self.display.print_step(json.dumps({
-                    "alert_sources": [
-                        {"type": "webhook", "url": "http://localhost:9090/api/v1/alerts"},
-                        {"type": "file", "path": "data/alerts.json"},
-                        {"type": "datadog", "api_key": "xxx", "app_key": "xxx"},
-                        {"type": "pagerduty", "routing_key": "xxx"},
-                        {"type": "slack_webhook", "webhook_url": "https://hooks.slack.com/services/..."},
-                        {"type": "healthcheck", "endpoints": [{"url": "http://localhost:8080/health", "service": "api"}]},
-                    ]
-                }, indent=2))
+                self.display.print_step(
+                    json.dumps(
+                        {
+                            "alert_sources": [
+                                {
+                                    "type": "webhook",
+                                    "url": "http://localhost:9090/api/v1/alerts",
+                                },
+                                {"type": "file", "path": "data/alerts.json"},
+                                {"type": "datadog", "api_key": "xxx", "app_key": "xxx"},
+                                {"type": "pagerduty", "routing_key": "xxx"},
+                                {
+                                    "type": "slack_webhook",
+                                    "webhook_url": "https://hooks.slack.com/services/...",
+                                },
+                                {
+                                    "type": "healthcheck",
+                                    "endpoints": [
+                                        {
+                                            "url": "http://localhost:8080/health",
+                                            "service": "api",
+                                        }
+                                    ],
+                                },
+                            ]
+                        },
+                        indent=2,
+                    )
+                )
             return
 
         while True:
@@ -70,7 +91,9 @@ class AlertManager:
                     alert = enrich_alert(alert)
                     if self._is_new(alert):
                         if self.display:
-                            self.display.print_step(f"New alert from {source.get('type', 'unknown')}")
+                            self.display.print_step(
+                                f"New alert from {source.get('type', 'unknown')}"
+                            )
                         self.analyzer.analyze(alert)
             time.sleep(interval)
 
@@ -121,7 +144,10 @@ class AlertManager:
         resp = requests.get(f"{url}/api/v1/query", params={"query": query}, timeout=10)
         resp.raise_for_status()
         results = resp.json().get("data", {}).get("result", [])
-        return [{"labels": r.get("metric", {}), "value": r.get("value", [])} for r in results]
+        return [
+            {"labels": r.get("metric", {}), "value": r.get("value", [])}
+            for r in results
+        ]
 
     def _fetch_datadog(self, source: dict) -> list[dict]:
         api_key = source.get("api_key", "")
@@ -147,7 +173,9 @@ class AlertManager:
                 "description": event.get("text", ""),
                 "severity": event.get("priority", "warning"),
                 "timestamp": event.get("date_happened"),
-                "service": event.get("tags", {}).get("service", "unknown") if isinstance(event.get("tags"), dict) else "",
+                "service": event.get("tags", {}).get("service", "unknown")
+                if isinstance(event.get("tags"), dict)
+                else "",
                 "tags": event.get("tags", []),
             }
             alerts.append(alert)
@@ -220,40 +248,50 @@ class AlertManager:
             try:
                 resp = requests.get(url, timeout=timeout_seconds)
                 if resp.status_code != expected_status:
-                    alerts.append({
+                    alerts.append(
+                        {
+                            "source": "healthcheck",
+                            "title": f"Health check failed: {service}",
+                            "description": f"Expected status {expected_status}, got {resp.status_code} from {url}",
+                            "severity": "critical"
+                            if resp.status_code >= 500
+                            else "warning",
+                            "service": service,
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "status_code": resp.status_code,
+                            "url": url,
+                        }
+                    )
+            except requests.exceptions.Timeout:
+                alerts.append(
+                    {
                         "source": "healthcheck",
-                        "title": f"Health check failed: {service}",
-                        "description": f"Expected status {expected_status}, got {resp.status_code} from {url}",
-                        "severity": "critical" if resp.status_code >= 500 else "warning",
+                        "title": f"Health check timeout: {service}",
+                        "description": f"Health check timed out after {timeout_seconds}s at {url}",
+                        "severity": "critical",
                         "service": service,
                         "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "status_code": resp.status_code,
                         "url": url,
-                    })
-            except requests.exceptions.Timeout:
-                alerts.append({
-                    "source": "healthcheck",
-                    "title": f"Health check timeout: {service}",
-                    "description": f"Health check timed out after {timeout_seconds}s at {url}",
-                    "severity": "critical",
-                    "service": service,
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                    "url": url,
-                })
+                    }
+                )
             except requests.exceptions.ConnectionError:
-                alerts.append({
-                    "source": "healthcheck",
-                    "title": f"Health check connection failed: {service}",
-                    "description": f"Could not connect to health endpoint at {url}",
-                    "severity": "critical",
-                    "service": service,
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                    "url": url,
-                })
+                alerts.append(
+                    {
+                        "source": "healthcheck",
+                        "title": f"Health check connection failed: {service}",
+                        "description": f"Could not connect to health endpoint at {url}",
+                        "severity": "critical",
+                        "service": service,
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "url": url,
+                    }
+                )
         return alerts
 
     def _is_new(self, alert: dict) -> bool:
-        h = hashlib.md5(json.dumps(alert, sort_keys=True, default=str).encode()).hexdigest()
+        h = hashlib.md5(
+            json.dumps(alert, sort_keys=True, default=str).encode()
+        ).hexdigest()
         if h in self._seen_hashes:
             return False
         self._seen_hashes.add(h)

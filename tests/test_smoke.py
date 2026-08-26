@@ -4,8 +4,10 @@ import pytest
 
 import sentinel
 
+
 def test_package_importable():
     assert sentinel is not None
+
 
 def test_import_all_submodules():
     errors = []

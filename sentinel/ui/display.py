@@ -23,14 +23,20 @@ class Display:
     def print_incident(self, incident: dict):
         console.print()
         severity = incident.get("severity", "P3")
-        sev_color = {"P1": "red", "P2": "dark_orange", "P3": "yellow", "P4": "green"}.get(severity, "yellow")
+        sev_color = {
+            "P1": "red",
+            "P2": "dark_orange",
+            "P3": "yellow",
+            "P4": "green",
+        }.get(severity, "yellow")
 
         console.print(
             Panel(
                 f"[bold {sev_color}]{severity}[/bold {sev_color}] -- {incident.get('title', 'Incident')}\n"
                 f"ID: {incident.get('incident_id', 'unknown')}\n"
                 f"Root Cause: {incident.get('root_cause', 'N/A')}",
-                border_style=sev_color, expand=True,
+                border_style=sev_color,
+                expand=True,
             )
         )
 
@@ -40,7 +46,9 @@ class Display:
             table.add_column("Field", style="bold")
             table.add_column("Value")
             table.add_row("Severity", impact.get("severity", "-"))
-            table.add_row("Affected Services", ", ".join(impact.get("affected_services", [])))
+            table.add_row(
+                "Affected Services", ", ".join(impact.get("affected_services", []))
+            )
             table.add_row("Blast Radius", impact.get("blast_radius", "-"))
             table.add_row("Est. Downtime", impact.get("estimated_downtime", "-"))
             console.print(table)
@@ -55,7 +63,9 @@ class Display:
             st.add_column("Command", style="dim")
             for s in sorted(steps, key=lambda x: x.get("order", 99)):
                 risk = s.get("risk", "low")
-                risk_style = {"low": "green", "medium": "yellow", "high": "red"}.get(risk, "white")
+                risk_style = {"low": "green", "medium": "yellow", "high": "red"}.get(
+                    risk, "white"
+                )
                 st.add_row(
                     str(s.get("order", "?")),
                     s.get("action", ""),
@@ -75,7 +85,9 @@ class Display:
 
     def print_timeline(self, timeline: list[dict]):
         console.print()
-        console.print(Panel("[bold]Incident Timeline[/bold]", border_style="blue", expand=True))
+        console.print(
+            Panel("[bold]Incident Timeline[/bold]", border_style="blue", expand=True)
+        )
         console.print()
 
         if not timeline:
@@ -105,7 +117,9 @@ class Display:
 
     def print_postmortem(self, postmortem_markdown: str):
         console.print()
-        console.print(Panel("[bold]Postmortem Report[/bold]", border_style="magenta", expand=True))
+        console.print(
+            Panel("[bold]Postmortem Report[/bold]", border_style="magenta", expand=True)
+        )
         console.print()
         md = Markdown(postmortem_markdown)
         console.print(md)
@@ -113,7 +127,9 @@ class Display:
 
     def print_correlation_graph(self, correlations: dict):
         console.print()
-        console.print(Panel("[bold]Alert Correlations[/bold]", border_style="yellow", expand=True))
+        console.print(
+            Panel("[bold]Alert Correlations[/bold]", border_style="yellow", expand=True)
+        )
         console.print()
 
         by_service = correlations.get("by_service", {})

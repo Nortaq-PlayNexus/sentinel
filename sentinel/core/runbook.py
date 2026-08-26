@@ -22,10 +22,30 @@ TEMPLATE_RUNBOOKS = {
             "Check port binding: `ss -tuln | grep <port>`",
         ],
         "remediation": [
-            {"order": 1, "action": "Restart the service", "command": "systemctl restart <service>", "risk": "medium"},
-            {"order": 2, "action": "If restart fails, check disk space", "command": "df -h", "risk": "low"},
-            {"order": 3, "action": "If disk full, clean logs", "command": "journalctl --vacuum-time=3d", "risk": "medium"},
-            {"order": 4, "action": "Rollback if recent deployment", "command": "git revert HEAD --no-edit", "risk": "high"},
+            {
+                "order": 1,
+                "action": "Restart the service",
+                "command": "systemctl restart <service>",
+                "risk": "medium",
+            },
+            {
+                "order": 2,
+                "action": "If restart fails, check disk space",
+                "command": "df -h",
+                "risk": "low",
+            },
+            {
+                "order": 3,
+                "action": "If disk full, clean logs",
+                "command": "journalctl --vacuum-time=3d",
+                "risk": "medium",
+            },
+            {
+                "order": 4,
+                "action": "Rollback if recent deployment",
+                "command": "git revert HEAD --no-edit",
+                "risk": "high",
+            },
         ],
         "verification": [
             "Health check returns 200",
@@ -55,10 +75,30 @@ TEMPLATE_RUNBOOKS = {
             "Check network latency: `ping <dependency>`",
         ],
         "remediation": [
-            {"order": 1, "action": "Scale up instances", "command": "docker service scale <service>=<count>", "risk": "medium"},
-            {"order": 2, "action": "Enable caching if applicable", "command": "", "risk": "low"},
-            {"order": 3, "action": "Check and optimize slow queries", "command": "", "risk": "low"},
-            {"order": 4, "action": "Increase connection pool", "command": "", "risk": "medium"},
+            {
+                "order": 1,
+                "action": "Scale up instances",
+                "command": "docker service scale <service>=<count>",
+                "risk": "medium",
+            },
+            {
+                "order": 2,
+                "action": "Enable caching if applicable",
+                "command": "",
+                "risk": "low",
+            },
+            {
+                "order": 3,
+                "action": "Check and optimize slow queries",
+                "command": "",
+                "risk": "low",
+            },
+            {
+                "order": 4,
+                "action": "Increase connection pool",
+                "command": "",
+                "risk": "medium",
+            },
         ],
         "verification": [
             "Latency metrics return to baseline",
@@ -86,10 +126,30 @@ TEMPLATE_RUNBOOKS = {
             "Check for memory growth trend in monitoring",
         ],
         "remediation": [
-            {"order": 1, "action": "Restart affected service", "command": "systemctl restart <service>", "risk": "medium"},
-            {"order": 2, "action": "Increase memory limits", "command": "", "risk": "medium"},
-            {"order": 3, "action": "Enable memory profiling", "command": "", "risk": "low"},
-            {"order": 4, "action": "Scale horizontally to distribute load", "command": "docker service scale <service>=<count>", "risk": "medium"},
+            {
+                "order": 1,
+                "action": "Restart affected service",
+                "command": "systemctl restart <service>",
+                "risk": "medium",
+            },
+            {
+                "order": 2,
+                "action": "Increase memory limits",
+                "command": "",
+                "risk": "medium",
+            },
+            {
+                "order": 3,
+                "action": "Enable memory profiling",
+                "command": "",
+                "risk": "low",
+            },
+            {
+                "order": 4,
+                "action": "Scale horizontally to distribute load",
+                "command": "docker service scale <service>=<count>",
+                "risk": "medium",
+            },
         ],
         "verification": [
             "Memory usage stabilizes after restart",
@@ -117,10 +177,30 @@ TEMPLATE_RUNBOOKS = {
             "Check for temp files: `ls -la /tmp/`",
         ],
         "remediation": [
-            {"order": 1, "action": "Clean old logs", "command": "find /var/log -name '*.log' -mtime +7 -delete", "risk": "medium"},
-            {"order": 2, "action": "Clean temp files", "command": "find /tmp -type f -mtime +1 -delete", "risk": "low"},
-            {"order": 3, "action": "Vacuum journal logs", "command": "journalctl --vacuum-time=3d", "risk": "medium"},
-            {"order": 4, "action": "Clean Docker images", "command": "docker system prune -f", "risk": "medium"},
+            {
+                "order": 1,
+                "action": "Clean old logs",
+                "command": "find /var/log -name '*.log' -mtime +7 -delete",
+                "risk": "medium",
+            },
+            {
+                "order": 2,
+                "action": "Clean temp files",
+                "command": "find /tmp -type f -mtime +1 -delete",
+                "risk": "low",
+            },
+            {
+                "order": 3,
+                "action": "Vacuum journal logs",
+                "command": "journalctl --vacuum-time=3d",
+                "risk": "medium",
+            },
+            {
+                "order": 4,
+                "action": "Clean Docker images",
+                "command": "docker system prune -f",
+                "risk": "medium",
+            },
         ],
         "verification": [
             "Disk usage below 80%",
@@ -148,10 +228,30 @@ TEMPLATE_RUNBOOKS = {
             "Review recent code changes",
         ],
         "remediation": [
-            {"order": 1, "action": "Rollback to previous version", "command": "kubectl rollout undo deployment/<service>", "risk": "high"},
-            {"order": 2, "action": "Verify rollback health", "command": "", "risk": "low"},
-            {"order": 3, "action": "Notify team of rollback", "command": "", "risk": "low"},
-            {"order": 4, "action": "Create incident ticket for root cause", "command": "", "risk": "low"},
+            {
+                "order": 1,
+                "action": "Rollback to previous version",
+                "command": "kubectl rollout undo deployment/<service>",
+                "risk": "high",
+            },
+            {
+                "order": 2,
+                "action": "Verify rollback health",
+                "command": "",
+                "risk": "low",
+            },
+            {
+                "order": 3,
+                "action": "Notify team of rollback",
+                "command": "",
+                "risk": "low",
+            },
+            {
+                "order": 4,
+                "action": "Create incident ticket for root cause",
+                "command": "",
+                "risk": "low",
+            },
         ],
         "verification": [
             "Service returns to pre-deploy state",
@@ -188,13 +288,17 @@ class RunbookGenerator:
 
         if not symptoms:
             symptoms = [
-                f"Alerts firing for {', '.join(services)}" if services else "Multiple alerts detected",
+                f"Alerts firing for {', '.join(services)}"
+                if services
+                else "Multiple alerts detected",
                 f"Root cause identified: {root_cause}",
             ]
 
         diagnosis_steps = [
             "Review incident timeline and related alerts",
-            f"Check health of affected services: {', '.join(services)}" if services else "Check health of affected services",
+            f"Check health of affected services: {', '.join(services)}"
+            if services
+            else "Check health of affected services",
             "Review recent changes and deployments",
             "Check resource utilization (CPU, memory, disk, network)",
         ]
@@ -207,7 +311,9 @@ class RunbookGenerator:
         ]
 
         escalation = [
-            f"On-call engineer - immediate for {severity}" if severity in ("P1", "P2") else "On-call engineer - within 30 min",
+            f"On-call engineer - immediate for {severity}"
+            if severity in ("P1", "P2")
+            else "On-call engineer - within 30 min",
             "Team lead - if not resolved in 30 min",
             "Engineering manager - if customer impact > 1 hour",
         ]
