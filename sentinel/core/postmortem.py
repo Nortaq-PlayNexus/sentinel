@@ -212,26 +212,18 @@ class PostmortemGenerator:
             lines.append("")
 
         lines.append("**Short-term (within 1 week):**")
-        lines.append(
-            f"{item_num}. [ ] Create monitoring dashboard for affected services"
-        )
+        lines.append(f"{item_num}. [ ] Create monitoring dashboard for affected services")
         item_num += 1
         lines.append(f"{item_num}. [ ] Add alerting for root cause indicators")
         item_num += 1
-        lines.append(
-            f"{item_num}. [ ] Review and update runbooks based on this incident"
-        )
+        lines.append(f"{item_num}. [ ] Review and update runbooks based on this incident")
         item_num += 1
         lines.append("")
 
         lines.append("**Long-term (within 1 month):**")
-        lines.append(
-            f"{item_num}. [ ] Implement automated remediation for this failure mode"
-        )
+        lines.append(f"{item_num}. [ ] Implement automated remediation for this failure mode")
         item_num += 1
-        lines.append(
-            f"{item_num}. [ ] Conduct chaos engineering tests for this scenario"
-        )
+        lines.append(f"{item_num}. [ ] Conduct chaos engineering tests for this scenario")
         item_num += 1
 
         if prevention:
@@ -243,9 +235,7 @@ class PostmortemGenerator:
 
         return "\n".join(lines)
 
-    def _build_lessons_learned(
-        self, incident: dict, root_cause: str, severity: str
-    ) -> str:
+    def _build_lessons_learned(self, incident: dict, root_cause: str, severity: str) -> str:
         lines = []
 
         lines.append("**What went well:**")

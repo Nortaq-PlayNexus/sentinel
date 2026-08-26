@@ -19,60 +19,40 @@ def build_parser() -> argparse.ArgumentParser:
         prog="sentinel",
         description="AI Incident Commander — detect, diagnose, and remediate production incidents.",
     )
-    parser.add_argument(
-        "--version", action="version", version=f"%(prog)s {__version__}"
-    )
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command")
 
     diagnose = sub.add_parser("diagnose", help="Diagnose an incident from alert data")
     diagnose.add_argument("input", nargs="?", help="JSON file or inline JSON alert")
     diagnose.add_argument("--format", choices=["json", "text"], default="text")
 
-    remediate = sub.add_parser(
-        "remediate", help="Execute remediation for a diagnosed incident"
-    )
+    remediate = sub.add_parser("remediate", help="Execute remediation for a diagnosed incident")
     remediate.add_argument("incident_id", type=str, help="Incident ID to remediate")
-    remediate.add_argument(
-        "--dry-run", action="store_true", help="Show what would be done"
-    )
+    remediate.add_argument("--dry-run", action="store_true", help="Show what would be done")
 
     watch = sub.add_parser("watch", help="Watch for alerts from configured sources")
     watch.add_argument("--config", type=str, default="config/sentinel.json")
-    watch.add_argument(
-        "--interval", type=int, default=30, help="Poll interval in seconds"
-    )
+    watch.add_argument("--interval", type=int, default=30, help="Poll interval in seconds")
 
     report = sub.add_parser("report", help="Generate incident report")
-    report.add_argument(
-        "incident_id", type=str, nargs="?", help="Incident ID or JSON file"
-    )
+    report.add_argument("incident_id", type=str, nargs="?", help="Incident ID or JSON file")
     report.add_argument("--incident", type=str, help="Path to incident JSON file")
-    report.add_argument(
-        "--format", choices=["json", "md", "markdown", "text"], default="text"
-    )
+    report.add_argument("--format", choices=["json", "md", "markdown", "text"], default="text")
 
-    runbook = sub.add_parser(
-        "runbook", help="Generate a runbook from an incident or template"
-    )
+    runbook = sub.add_parser("runbook", help="Generate a runbook from an incident or template")
     runbook.add_argument("--incident", type=str, help="Path to incident JSON file")
     runbook.add_argument(
         "--template",
         type=str,
         help="Template name (service_down, high_latency, memory_leak, disk_full, deploy_failure)",
     )
-    runbook.add_argument(
-        "--list-templates", action="store_true", help="List available templates"
-    )
+    runbook.add_argument("--list-templates", action="store_true", help="List available templates")
 
-    postmortem = sub.add_parser(
-        "postmortem", help="Generate a postmortem from an incident"
-    )
+    postmortem = sub.add_parser("postmortem", help="Generate a postmortem from an incident")
     postmortem.add_argument(
         "--incident", type=str, required=True, help="Path to incident JSON file"
     )
-    postmortem.add_argument(
-        "--format", choices=["md", "markdown", "text"], default="markdown"
-    )
+    postmortem.add_argument("--format", choices=["md", "markdown", "text"], default="markdown")
 
     return parser
 

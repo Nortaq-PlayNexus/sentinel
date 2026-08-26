@@ -72,9 +72,7 @@ class IncidentAnalyzer:
             result = self._llm_analyze(alert_data)
         except Exception as e:
             if self.display:
-                self.display.print_step(
-                    f"LLM unavailable, using rule-based analysis: {e}"
-                )
+                self.display.print_step(f"LLM unavailable, using rule-based analysis: {e}")
             result = self._rule_based_analyze(alert_data)
 
         result.setdefault(
@@ -125,18 +123,14 @@ class IncidentAnalyzer:
         severity = self._infer_severity(alerts)
         services = set()
         for alert in alerts:
-            svc = alert.get("service") or alert.get("labels", {}).get(
-                "service", "unknown"
-            )
+            svc = alert.get("service") or alert.get("labels", {}).get("service", "unknown")
             services.add(svc)
 
         root_cause = self._detect_root_cause(alerts)
         remediation = self._suggest_remediation(root_cause, list(services))
 
         return {
-            "title": alert_data.get(
-                "summary", alert_data.get("title", "Production Incident")
-            ),
+            "title": alert_data.get("summary", alert_data.get("title", "Production Incident")),
             "severity": severity,
             "root_cause": root_cause,
             "impact": {
@@ -161,11 +155,7 @@ class IncidentAnalyzer:
                 return "Out of Memory (OOM) - process killed by kernel OOM killer. Check memory limits and usage."
             if "disk full" in msg or "no space left" in msg or "disk usage" in msg:
                 return "Disk Full - filesystem exhausted. Check for log growth, temp files, or data accumulation."
-            if (
-                "connection pool" in msg
-                or "pool exhausted" in msg
-                or "too many connections" in msg
-            ):
+            if "connection pool" in msg or "pool exhausted" in msg or "too many connections" in msg:
                 return "Connection Pool Exhausted - all connections in use. Check for connection leaks or increase pool size."
             if "cpu" in msg and ("high" in msg or "95%" in msg or "100%" in msg):
                 return "High CPU Usage - process consuming excessive CPU. Check for infinite loops or hot paths."
@@ -184,7 +174,9 @@ class IncidentAnalyzer:
             if "dns" in msg or "resolution" in msg:
                 return "DNS Resolution Failure - unable to resolve hostname. Check DNS server and records."
             if "killed" in msg or "crash" in msg or "panic" in msg:
-                return "Process Crash - process terminated unexpectedly. Check logs for crash reason."
+                return (
+                    "Process Crash - process terminated unexpectedly. Check logs for crash reason."
+                )
             if "rate limit" in msg or "throttl" in msg:
                 return "Rate Limiting - requests throttled. Reduce request rate or increase limits."
             if "auth" in msg or "unauthorized" in msg or "forbidden" in msg:
@@ -298,18 +290,12 @@ class IncidentAnalyzer:
                     "risk": "medium",
                 },
             ]
-        elif (
-            "503" in root_cause
-            or "502" in root_cause
-            or "unavailable" in root_cause.lower()
-        ):
+        elif "503" in root_cause or "502" in root_cause or "unavailable" in root_cause.lower():
             steps = [
                 {
                     "order": 1,
                     "action": "Check service status",
-                    "command": f"systemctl status {services[0]}"
-                    if services
-                    else "docker ps",
+                    "command": f"systemctl status {services[0]}" if services else "docker ps",
                     "risk": "low",
                 },
                 {
@@ -362,9 +348,7 @@ class IncidentAnalyzer:
         time_window_minutes = 5
 
         for alert in alerts:
-            svc = alert.get("service") or alert.get("labels", {}).get(
-                "service", "unknown"
-            )
+            svc = alert.get("service") or alert.get("labels", {}).get("service", "unknown")
             groups["by_service"].setdefault(svc, []).append(alert)
 
             ts = alert.get("timestamp", alert.get("time", ""))
@@ -383,32 +367,22 @@ class IncidentAnalyzer:
                     pass
 
         for alert in alerts:
-            svc = alert.get("service") or alert.get("labels", {}).get(
-                "service", "unknown"
-            )
+            svc = alert.get("service") or alert.get("labels", {}).get("service", "unknown")
             deps = SERVICE_DEPENDENCIES.get(svc, [])
             for dep in deps:
                 for other in alerts:
-                    other_svc = other.get("service") or other.get("labels", {}).get(
-                        "service", ""
-                    )
+                    other_svc = other.get("service") or other.get("labels", {}).get("service", "")
                     if other_svc == dep:
-                        groups["by_dependency"].setdefault(f"{svc}->{dep}", []).append(
-                            alert
-                        )
+                        groups["by_dependency"].setdefault(f"{svc}->{dep}", []).append(alert)
 
         return groups
 
     def build_timeline(self, incident: dict) -> list[dict]:
         timeline = []
-        alerts = (
-            incident.get("alerts", [incident]) if isinstance(incident, dict) else []
-        )
+        alerts = incident.get("alerts", [incident]) if isinstance(incident, dict) else []
 
         for alert in alerts:
-            ts = alert.get(
-                "timestamp", alert.get("time", datetime.now(timezone.utc).isoformat())
-            )
+            ts = alert.get("timestamp", alert.get("time", datetime.now(timezone.utc).isoformat()))
             summary = alert.get(
                 "summary",
                 alert.get("description", alert.get("message", "Alert received")),
@@ -450,9 +424,7 @@ class IncidentAnalyzer:
                     except (ValueError, TypeError, OSError):
                         pass
             if len(timestamps) >= 2:
-                duration_minutes = (
-                    max(timestamps) - min(timestamps)
-                ).total_seconds() / 60
+                duration_minutes = (max(timestamps) - min(timestamps)).total_seconds() / 60
 
         thresholds = ESCALATION_THRESHOLDS.get(severity, ESCALATION_THRESHOLDS["P3"])
         escalate_now = thresholds["immediate"] or duration_minutes > 30
@@ -475,9 +447,7 @@ class IncidentAnalyzer:
         import os
 
         incidents_dir = (
-            Path("data/incidents")
-            if os.path.exists("data")
-            else Path("sentinel-data/incidents")
+            Path("data/incidents") if os.path.exists("data") else Path("sentinel-data/incidents")
         )
         incidents_dir.mkdir(parents=True, exist_ok=True)
         iid = incident.get("incident_id", "unknown")

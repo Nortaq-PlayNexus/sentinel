@@ -144,10 +144,7 @@ class AlertManager:
         resp = requests.get(f"{url}/api/v1/query", params={"query": query}, timeout=10)
         resp.raise_for_status()
         results = resp.json().get("data", {}).get("result", [])
-        return [
-            {"labels": r.get("metric", {}), "value": r.get("value", [])}
-            for r in results
-        ]
+        return [{"labels": r.get("metric", {}), "value": r.get("value", [])} for r in results]
 
     def _fetch_datadog(self, source: dict) -> list[dict]:
         api_key = source.get("api_key", "")
@@ -253,9 +250,7 @@ class AlertManager:
                             "source": "healthcheck",
                             "title": f"Health check failed: {service}",
                             "description": f"Expected status {expected_status}, got {resp.status_code} from {url}",
-                            "severity": "critical"
-                            if resp.status_code >= 500
-                            else "warning",
+                            "severity": "critical" if resp.status_code >= 500 else "warning",
                             "service": service,
                             "timestamp": datetime.now(timezone.utc).isoformat(),
                             "status_code": resp.status_code,
@@ -289,9 +284,7 @@ class AlertManager:
         return alerts
 
     def _is_new(self, alert: dict) -> bool:
-        h = hashlib.md5(
-            json.dumps(alert, sort_keys=True, default=str).encode()
-        ).hexdigest()
+        h = hashlib.md5(json.dumps(alert, sort_keys=True, default=str).encode()).hexdigest()
         if h in self._seen_hashes:
             return False
         self._seen_hashes.add(h)

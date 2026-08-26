@@ -74,9 +74,7 @@ class RemediationEngine:
             risk = step.get("risk", "low")
 
             if self.display:
-                self.display.print_step(
-                    f"  Step {step.get('order', '?')}: {action} [risk: {risk}]"
-                )
+                self.display.print_step(f"  Step {step.get('order', '?')}: {action} [risk: {risk}]")
 
             if dry_run:
                 if command:
@@ -116,9 +114,7 @@ class RemediationEngine:
 
     def scale_instances(self, service: str, count: int) -> bool:
         action_meta = REMEDIATION_ACTIONS["scale_instances"]
-        if not self._confirm_action(
-            f"Scale '{service}' to {count} instances", action_meta
-        ):
+        if not self._confirm_action(f"Scale '{service}' to {count} instances", action_meta):
             return False
 
         cmd = f"docker service scale {service}={count}"
@@ -146,9 +142,7 @@ class RemediationEngine:
 
     def clear_cache(self, service: str, cache_type: str = "redis") -> bool:
         action_meta = REMEDIATION_ACTIONS["clear_cache"]
-        if not self._confirm_action(
-            f"Clear {cache_type} cache for '{service}'", action_meta
-        ):
+        if not self._confirm_action(f"Clear {cache_type} cache for '{service}'", action_meta):
             return False
 
         if cache_type == "redis":
@@ -183,9 +177,7 @@ class RemediationEngine:
 
     def enable_maintenance_mode(self, service: str) -> bool:
         action_meta = REMEDIATION_ACTIONS["enable_maintenance_mode"]
-        if not self._confirm_action(
-            f"Enable maintenance mode for '{service}'", action_meta
-        ):
+        if not self._confirm_action(f"Enable maintenance mode for '{service}'", action_meta):
             return False
 
         cmd = f"touch /tmp/{service}.maintenance"
