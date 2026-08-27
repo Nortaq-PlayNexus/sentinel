@@ -15,7 +15,7 @@ No more war rooms at 3 AM. Sentinel diagnoses the problem and hands you the fix.
 
 ---
 
-## Features
+\n---\n\n## Screenshots\n\n| Preview | Description |\n|---------|-------------|\n| ![screenshot](docs/screenshots/screenshot.png) | Main interface |\n| ![screenshot](docs/screenshots/demo.gif) | Demo |\n\n*Screenshots coming soon — placeholders auto-generated. Replace docs/screenshots/ with real captures.*\n\n## Features
 
 ### AI root cause analysis
 - Ingests alert data from any source (Prometheus, Grafana, Datadog, webhooks, files)
